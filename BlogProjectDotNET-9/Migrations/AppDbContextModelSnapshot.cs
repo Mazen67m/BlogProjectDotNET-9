@@ -330,7 +330,7 @@ namespace BlogProjectDotNET_9.Migrations
                     b.HasOne("BlogProjectDotNET_9.Models.Post", "Post")
                         .WithMany("Comments")
                         .HasForeignKey("PostId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("BlogProjectDotNET_9.Models.ApplicationUser", "User")
