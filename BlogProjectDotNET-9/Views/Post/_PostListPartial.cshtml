@@ -67,7 +67,7 @@ else
                                 <div class="author-avatar">
                                     <i class="bi bi-person-circle"></i>
                                 </div>
-                                <span class="author-name">@post.Author</span>
+                                <span class="author-name">@post.Author?.FullName</span>
                             </div>
                             <a asp-action="Details" asp-controller="Post" asp-route-id="@post.Id" 
                                class="read-more-link">
