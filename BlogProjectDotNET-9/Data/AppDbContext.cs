@@ -19,9 +19,10 @@ namespace BlogProjectDotNET_9.Data
             base.OnModelCreating(modelBuilder);
             modelBuilder.Entity<Post>()
                 .HasOne(p => p.Author)
-                .WithMany(a=>a.Posts)
+                .WithMany(a => a.Posts)
                 .HasForeignKey(p => p.AuthorId)
                 .OnDelete(DeleteBehavior.Cascade);
+                
         }
     }
 }

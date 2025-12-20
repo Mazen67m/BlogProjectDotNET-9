@@ -4,134 +4,188 @@
 
 @{
     ViewData["Title"] = Model.Title;
+    var authorInitial = Model.Author?.FullName?.FirstOrDefault().ToString().ToUpper() ?? "A";
 }
 
-<style>
-    .content-wrapper {
-        padding: 30px 20px;
-        max-width: 900px;
-        margin: 0 auto;
-        font-family: 'Segoe UI', sans-serif;
-    }
-
-    .feature-image {
-        width: 100%;
-        height: 450px;
-        object-fit: cover;
-        border-radius: 8px;
-        margin-bottom: 30px;
-    }
-
-    .comment-card {
-        border-left: 5px solid #0d6efd;
-    }
-
-    .comment-avatar {
-        width: 50px;
-        height: 50px;
-        object-fit: cover;
-        border-radius: 50%;
-    }
-
-    .comment-meta {
-        font-size: 0.85rem;
-        color: #6c757d;
-    }
-
-    .comment-section-title {
-        border-bottom: 2px solid #dee2e6;
-        padding-bottom: 5px;
-        margin-top: 50px;
-    }
-</style>
-
-<div class="content-wrapper">
-    @* Admin / Author Tools *@
-    @if (User.IsInRole("Admin") || User.IsInRole("Author"))
-    {
-        <div class="d-flex justify-content-end mb-2">
-            <a class="btn btn-outline-primary me-2" asp-action="Edit" asp-controller="Post" asp-route-id="@Model.Id">Edit</a>
-            <a class="btn btn-outline-danger" asp-action="Delete" asp-controller="Post" asp-route-id="@Model.Id">Delete</a>
-        </div>
-    }
-
-    <h1 class="fw-bold">@Model.Title</h1>
-
-    <div class="mb-2 text-muted">
-        <span class="badge bg-primary">By: @Model.Author</span>
-        <span class="badge bg-secondary">Published: @Model.PublishedDate.ToString("yyyy-MM-dd")</span>
-        <span class="badge bg-info text-dark">Category: @Model.Category.Name</span>
-    </div>
-
-    <img src="@Model.FeatureImagePath" alt="@Model.Title" class="feature-image" />
-
-    <div class="mb-5">
-        @Html.Raw(Model.Content)
-    </div>
-
-    <h4 class="comment-section-title">Comments</h4>
-
-    @if (Model.Comments.Any())
-    {
-        <div class="CommentSection">
-            @foreach (var comment in Model.Comments)
-            {
-                var user = comment.User;
-                var roleTask = UserManager.GetRolesAsync(user);
-                roleTask.Wait();
-                var role = roleTask.Result.FirstOrDefault() ?? "User";
-
-                var badgeClass = role switch
-                {
-                    "Admin" => "bg-danger",
-                    "Author" => "bg-warning text-dark",
-                    _ => "bg-secondary"
-                };
-
-                <div class="card shadow-sm mb-3 comment-card">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center mb-2">
-                            <img src="@(user?.ProfilePictureUrl ?? "/images/default-user.png")" alt="Profile" class="comment-avatar me-3 border border-2" />
-                            <div>
-                                <div class="fw-semibold">@user?.FullName</div>
-                                <span class="badge @badgeClass">@role</span><br />
-                                <small class="comment-meta">@comment.CommentDate.ToString("g")</small>
-                            </div>
-                        </div>
-                        <p class="mb-0">@comment.CommentText</p>
+<article class="post-detail">
+    <!-- Hero Header -->
+    <header class="post-header">
+        <div class="post-header-content">
+            <!-- Category & Date -->
+            <div class="post-meta-top mb-3">
+                <span class="category-pill">
+                    <i class="bi bi-folder me-1"></i>@Model.Category.Name
+                </span>
+                <span class="separator">•</span>
+                <span class="date">
+                    <i class="bi bi-calendar3 me-1"></i>@Model.PublishedDate.ToString("MMMM dd, yyyy")
+                </span>
+            </div>
+            
+            <!-- Title -->
+            <h1 class="post-title">@Model.Title</h1>
+            
+            <!-- Author Info -->
+            <div class="author-section mt-4">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="author-avatar-large">
+                        @if (Model.Author?.ProfilePictureUrl != null)
+                        {
+                            <img src="@Model.Author.ProfilePictureUrl" alt="@Model.Author.FullName" />
+                        }
+                        else
+                        {
+                            <span>@authorInitial</span>
+                        }
                     </div>
+                    <div>
+                        <div class="author-name">@Model.Author?.FullName</div>
+                        <div class="author-role text-muted">Author</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Admin/Author Actions -->
+            @if (User.IsInRole("Admin") || (User.IsInRole("Author") && Model.Author?.Id == UserManager.GetUserId(User)))
+            {
+                <div class="post-actions mt-4">
+                    <a class="btn btn-outline-primary btn-sm" asp-action="Edit" asp-controller="Post" asp-route-id="@Model.Id">
+                        <i class="bi bi-pencil me-1"></i>Edit Post
+                    </a>
+                    <a class="btn btn-outline-danger btn-sm" asp-action="Delete" asp-controller="Post" asp-route-id="@Model.Id">
+                        <i class="bi bi-trash me-1"></i>Delete
+                    </a>
                 </div>
             }
         </div>
-    }
-    else
+    </header>
+    
+    <!-- Feature Image -->
+    @if (!string.IsNullOrEmpty(Model.FeatureImagePath))
     {
-        <p class="text-muted">No comments yet. Be the first to comment!</p>
+        <div class="feature-image-wrapper">
+            <img src="@Model.FeatureImagePath" alt="@Model.Title" class="feature-image" />
+        </div>
     }
+    
+    <!-- Post Content -->
+    <div class="post-content">
+        @Html.Raw(Model.Content)
+    </div>
+    
+    <!-- Share Section -->
+    <div class="share-section">
+        <span class="share-label">Share this article:</span>
+        <div class="share-buttons">
+            <a href="https://twitter.com/intent/tweet?text=@Uri.EscapeDataString(Model.Title)" target="_blank" class="share-btn twitter">
+                <i class="bi bi-twitter-x"></i>
+            </a>
+            <a href="https://www.facebook.com/sharer/sharer.php" target="_blank" class="share-btn facebook">
+                <i class="bi bi-facebook"></i>
+            </a>
+            <a href="https://www.linkedin.com/sharing/share-offsite/" target="_blank" class="share-btn linkedin">
+                <i class="bi bi-linkedin"></i>
+            </a>
+            <button class="share-btn copy" onclick="copyToClipboard()" title="Copy link">
+                <i class="bi bi-link-45deg"></i>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Comments Section -->
+    <section class="comments-section">
+        <h3 class="section-title">
+            <i class="bi bi-chat-dots me-2"></i>Comments
+            <span class="comment-count">(@Model.Comments.Count())</span>
+        </h3>
+        
+        @if (Model.Comments.Any())
+        {
+            <div class="comments-list">
+                @foreach (var comment in Model.Comments.OrderByDescending(c => c.CommentDate))
+                {
+                    var user = comment.User;
+                    var roleTask = UserManager.GetRolesAsync(user);
+                    roleTask.Wait();
+                    var role = roleTask.Result.FirstOrDefault() ?? "User";
+                    
+                    var badgeClass = role switch
+                    {
+                        "Admin" => "badge-admin",
+                        "Author" => "badge-author",
+                        _ => "badge-user"
+                    };
+                    
+                    var userInitial = user?.FullName?.FirstOrDefault().ToString().ToUpper() ?? "U";
 
-    <hr class="mt-5" />
-
-    <h5 class="mb-3">Leave a Comment</h5>
-
-    @if (!User.Identity.IsAuthenticated)
-    {
-        <p>You must be logged in to leave a comment.</p>
-        <a asp-controller="Account" asp-action="Login" class="btn btn-primary">Login</a>
-    }
-    else
-    {
-        <form id="FormComment" asp-action="AddComment" asp-controller="Comment" method="post">
-            <div class="mb-3">
-                <label for="Content" class="form-label">Your Comment</label>
-                <textarea id="Content" class="form-control" name="Content" rows="4" required></textarea>
+                    <div class="comment-item">
+                        <div class="comment-avatar">
+                            @if (user?.ProfilePictureUrl != null && !user.ProfilePictureUrl.Contains("default"))
+                            {
+                                <img src="@user.ProfilePictureUrl" alt="@user.FullName" />
+                            }
+                            else
+                            {
+                                <span>@userInitial</span>
+                            }
+                        </div>
+                        <div class="comment-body">
+                            <div class="comment-header">
+                                <span class="commenter-name">@user?.FullName</span>
+                                <span class="role-badge @badgeClass">@role</span>
+                                <span class="comment-date">@comment.CommentDate.ToString("MMM dd, yyyy 'at' HH:mm")</span>
+                            </div>
+                            <p class="comment-text">@comment.CommentText</p>
+                        </div>
+                    </div>
+                }
             </div>
-            <button type="submit" class="btn btn-success px-4">Post Comment</button>
-        </form>
-    }
-</div>
+        }
+        else
+        {
+            <div class="no-comments">
+                <i class="bi bi-chat-square-text display-4 text-muted"></i>
+                <p>No comments yet. Be the first to share your thoughts!</p>
+            </div>
+        }
+        
+        <!-- Comment Form -->
+        <div class="comment-form-section">
+            <h4 class="form-title">Leave a Comment</h4>
+            
+            @if (!User.Identity.IsAuthenticated)
+            {
+                <div class="login-prompt glass-card">
+                    <i class="bi bi-lock display-4 text-muted mb-3"></i>
+                    <p>You must be logged in to leave a comment.</p>
+                    <a asp-controller="Account" asp-action="Login" class="btn btn-primary">
+                        <i class="bi bi-box-arrow-in-right me-1"></i>Login to Comment
+                    </a>
+                </div>
+            }
+            else
+            {
+                <form id="FormComment" asp-action="AddComment" asp-controller="Comment" method="post" class="comment-form">
+                    <div class="mb-3">
+                        <textarea id="Content" class="form-control" name="Content" rows="4" 
+                                  placeholder="Share your thoughts on this article..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-send me-1"></i>Post Comment
+                    </button>
+                </form>
+            }
+        </div>
+    </section>
+</article>
 
 @section Scripts {
     <script>
+        function copyToClipboard() {
+            navigator.clipboard.writeText(window.location.href);
+            alert('Link copied to clipboard!');
+        }
+
         $(document).ready(function () {
             $("#FormComment").on('submit', function (event) {
                 event.preventDefault();
@@ -146,22 +200,34 @@
                     data: JSON.stringify({ content: content, postId: postId }),
                     success: function (response) {
                         $('#FormComment')[0].reset();
-
-                        $('.CommentSection').append(`
-                            <div class="card shadow-sm mb-3 comment-card">
-                                <div class="card-body">
-                                    <div class="d-flex align-items-center mb-2">
-                                        <img src="${response.profileImage}" class="comment-avatar me-3 border border-2" />
-                                        <div>
-                                            <div class="fw-semibold">${response.userFullName}</div>
-                                            <span class="badge ${response.badgeClass}">${response.role}</span><br />
-                                            <small class="comment-meta">${response.commentDate}</small>
-                                        </div>
+                        
+                        var initial = response.userFullName ? response.userFullName.charAt(0).toUpperCase() : 'U';
+                        
+                        $('.comments-list').prepend(`
+                            <div class="comment-item" style="animation: fadeInUp 0.5s ease-out;">
+                                <div class="comment-avatar">
+                                    ${response.profileImage && !response.profileImage.includes('default') 
+                                        ? `<img src="${response.profileImage}" alt="${response.userFullName}" />`
+                                        : `<span>${initial}</span>`}
+                                </div>
+                                <div class="comment-body">
+                                    <div class="comment-header">
+                                        <span class="commenter-name">${response.userFullName}</span>
+                                        <span class="role-badge badge-${response.role.toLowerCase()}">${response.role}</span>
+                                        <span class="comment-date">${response.commentDate}</span>
                                     </div>
-                                    <p class="mb-0">${response.commentText}</p>
+                                    <p class="comment-text">${response.commentText}</p>
                                 </div>
                             </div>
                         `);
+                        
+                        // Update comment count
+                        var countEl = $('.comment-count');
+                        var currentCount = parseInt(countEl.text().replace(/[()]/g, '')) || 0;
+                        countEl.text('(' + (currentCount + 1) + ')');
+                        
+                        // Remove "no comments" message if present
+                        $('.no-comments').remove();
                     },
                     error: function (xhr, status, error) {
                         console.error("Error:", error);
@@ -171,3 +237,360 @@
         });
     </script>
 }
+
+<style>
+    .post-detail {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+    
+    .post-header {
+        text-align: center;
+        padding: 2rem 0;
+    }
+    
+    .post-meta-top {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        color: var(--text-muted);
+        font-size: 0.875rem;
+    }
+    
+    .category-pill {
+        background: var(--gradient-primary);
+        color: white;
+        padding: 0.375rem 1rem;
+        border-radius: var(--radius-full);
+        font-weight: 600;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+    }
+    
+    .separator {
+        color: var(--text-muted);
+    }
+    
+    .post-title {
+        font-size: 2.75rem;
+        font-weight: 800;
+        line-height: 1.2;
+        margin: 1rem 0;
+        background: linear-gradient(135deg, var(--text-primary) 0%, var(--primary-light) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .author-section {
+        display: flex;
+        justify-content: center;
+    }
+    
+    .author-avatar-large {
+        width: 56px;
+        height: 56px;
+        background: var(--gradient-primary);
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(124, 58, 237, 0.4);
+    }
+    
+    .author-avatar-large img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .author-avatar-large span {
+        color: white;
+        font-weight: 700;
+        font-size: 1.25rem;
+    }
+    
+    .author-name {
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+    
+    .author-role {
+        font-size: 0.875rem;
+    }
+    
+    .post-actions {
+        display: flex;
+        gap: 0.75rem;
+        justify-content: center;
+    }
+    
+    .feature-image-wrapper {
+        margin: 2rem 0;
+        border-radius: var(--radius-xl);
+        overflow: hidden;
+        box-shadow: var(--shadow-lg);
+    }
+    
+    .feature-image {
+        width: 100%;
+        height: 450px;
+        object-fit: cover;
+        display: block;
+    }
+    
+    .post-content {
+        background: var(--bg-card);
+        border-radius: var(--radius-xl);
+        padding: 2.5rem;
+        margin-bottom: 2rem;
+        border: 1px solid var(--border-glass);
+        line-height: 1.8;
+        font-size: 1.0625rem;
+    }
+    
+    .post-content p {
+        margin-bottom: 1.5rem;
+        color: var(--text-secondary);
+    }
+    
+    .post-content h2, .post-content h3, .post-content h4 {
+        color: var(--text-primary);
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+    }
+    
+    .post-content img {
+        max-width: 100%;
+        border-radius: var(--radius-lg);
+        margin: 1.5rem 0;
+    }
+    
+    .post-content a {
+        color: var(--primary-light);
+    }
+    
+    .post-content code {
+        background: var(--bg-tertiary);
+        padding: 0.125rem 0.375rem;
+        border-radius: var(--radius-sm);
+        font-family: var(--font-mono);
+        font-size: 0.875em;
+    }
+    
+    .post-content pre {
+        background: var(--bg-tertiary);
+        padding: 1.5rem;
+        border-radius: var(--radius-lg);
+        overflow-x: auto;
+    }
+    
+    .post-content blockquote {
+        border-left: 4px solid var(--primary);
+        padding-left: 1.5rem;
+        margin: 1.5rem 0;
+        font-style: italic;
+        color: var(--text-muted);
+    }
+    
+    /* Share Section */
+    .share-section {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1.5rem 2rem;
+        background: var(--bg-card);
+        border-radius: var(--radius-xl);
+        margin-bottom: 2rem;
+        border: 1px solid var(--border-glass);
+    }
+    
+    .share-label {
+        color: var(--text-secondary);
+        font-weight: 500;
+    }
+    
+    .share-buttons {
+        display: flex;
+        gap: 0.5rem;
+    }
+    
+    .share-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: var(--radius-md);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        border: none;
+        cursor: pointer;
+        transition: var(--transition-base);
+    }
+    
+    .share-btn:hover {
+        transform: translateY(-2px);
+    }
+    
+    .share-btn.twitter { background: #1DA1F2; }
+    .share-btn.facebook { background: #4267B2; }
+    .share-btn.linkedin { background: #0077B5; }
+    .share-btn.copy { background: var(--bg-tertiary); color: var(--text-secondary); }
+    
+    /* Comments Section */
+    .comments-section {
+        background: var(--bg-card);
+        border-radius: var(--radius-xl);
+        padding: 2rem;
+        border: 1px solid var(--border-glass);
+    }
+    
+    .section-title {
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+    }
+    
+    .comment-count {
+        color: var(--text-muted);
+        font-weight: 400;
+        font-size: 1rem;
+        margin-left: 0.5rem;
+    }
+    
+    .comments-list {
+        margin-bottom: 2rem;
+    }
+    
+    .comment-item {
+        display: flex;
+        gap: 1rem;
+        padding: 1.25rem;
+        background: var(--bg-tertiary);
+        border-radius: var(--radius-lg);
+        margin-bottom: 1rem;
+        border-left: 3px solid var(--primary);
+    }
+    
+    .comment-avatar {
+        width: 44px;
+        height: 44px;
+        min-width: 44px;
+        background: var(--gradient-primary);
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+    
+    .comment-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .comment-avatar span {
+        color: white;
+        font-weight: 600;
+        font-size: 1rem;
+    }
+    
+    .comment-body {
+        flex: 1;
+    }
+    
+    .comment-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 0.5rem;
+        flex-wrap: wrap;
+    }
+    
+    .commenter-name {
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+    
+    .role-badge {
+        padding: 0.125rem 0.5rem;
+        border-radius: var(--radius-full);
+        font-size: 0.6875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+    }
+    
+    .badge-admin { background: var(--accent-red); color: white; }
+    .badge-author { background: var(--accent-orange); color: white; }
+    .badge-user { background: var(--bg-secondary); color: var(--text-secondary); }
+    
+    .comment-date {
+        color: var(--text-muted);
+        font-size: 0.8125rem;
+    }
+    
+    .comment-text {
+        color: var(--text-secondary);
+        margin: 0;
+        line-height: 1.6;
+    }
+    
+    .no-comments {
+        text-align: center;
+        padding: 3rem;
+        color: var(--text-muted);
+    }
+    
+    .no-comments p {
+        margin: 1rem 0 0;
+    }
+    
+    .comment-form-section {
+        border-top: 1px solid var(--border-color);
+        padding-top: 2rem;
+        margin-top: 2rem;
+    }
+    
+    .form-title {
+        margin-bottom: 1rem;
+    }
+    
+    .login-prompt {
+        text-align: center;
+        padding: 2.5rem;
+    }
+    
+    .login-prompt p {
+        color: var(--text-muted);
+        margin-bottom: 1.5rem;
+    }
+    
+    .comment-form textarea {
+        resize: none;
+    }
+    
+    @@media (max-width: 768px) {
+        .post-title {
+            font-size: 1.875rem;
+        }
+        
+        .feature-image {
+            height: 280px;
+        }
+        
+        .post-content {
+            padding: 1.5rem;
+        }
+        
+        .share-section {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+</style>

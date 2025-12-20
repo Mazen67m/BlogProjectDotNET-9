@@ -4,97 +4,344 @@
     ViewData["Title"] = "Create Post";
 }
 
-
-<style>
-    .content-wrapper {
-        padding: 20px;
-        max-width: 1000px;
-        margin: 0 auto;
-        font-family: sans-serif;
-    }
-</style>
-
-
-<div class="content-wrapper">
-    <div class="row">
-        <div class="col-6">
-            <h1>@ViewData["Title"]</h1>
-        </div>
-
-        <div class="col-6 text-end">
-            <a asp-action="Index" asp-controller="Post" class="btn btn-dark"> Back To List</a>
+<div class="create-post-container">
+    <!-- Header Section -->
+    <div class="page-header mb-4">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <h1 class="page-title">
+                    <i class="bi bi-plus-circle me-2"></i>Create New Post
+                </h1>
+                <p class="text-muted mb-0">Share your thoughts with the world</p>
+            </div>
+            <a asp-action="Index" asp-controller="Post" class="btn btn-outline-primary">
+                <i class="bi bi-arrow-left me-1"></i>Back to Posts
+            </a>
         </div>
     </div>
-    <hr />
 
-    <form asp-action="Create" asp-controller="Post" method="post" enctype="multipart/form-data">
-        <div class="validation-summary">
-            <div asp-validation-summary="All" class="text-danger">
-
+    <!-- Form Card -->
+    <div class="form-card">
+        <form asp-action="Create" asp-controller="Post" method="post" enctype="multipart/form-data" class="create-form">
+            <div asp-validation-summary="All" class="alert alert-danger mb-4" style="display:none;"></div>
+            
+            <!-- Title Section -->
+            <div class="form-section">
+                <label asp-for="Post.Title" class="form-label">
+                    <i class="bi bi-type me-1"></i>Post Title
+                </label>
+                <input asp-for="Post.Title" type="text" class="form-control form-control-lg" 
+                       placeholder="Enter an engaging title for your post..." />
+                <span asp-validation-for="Post.Title" class="text-danger small"></span>
             </div>
-        </div>
-        <div class="form-group">
-            <label asp-for="Post.Title"></label>
-            <input asp-for="Post.Title" type="text" class="form-control" placeholder="Enter The Title" />
-            <span asp-validation-for="Post.Title" class="text-danger"></span>
-        </div>
 
-        <br />
-        <div class="form-group">
-            <label asp-for="Post.CategoryId">Category</label>
-            <select asp-for="Post.CategoryId" asp-items="Model.Categories" class="form-control">
-                <option value="">Select Category</option>
-            </select>
-            <span asp-validation-for="Post.CategoryId"></span>
-        </div>
-
-        <br />
-
-        <div class="form-group">
-            <label asp-for="Post.Content"></label>
-            <textarea asp-for="Post.Content" type="text" class="form-control"
-                placeholder="Enter The Post Content"></textarea>
-            <span asp-validation-for="Post.Content" class="text-danger"></span>
-        </div>
-
-        <br />
-
-        @if (Model.Post != null && !string.IsNullOrEmpty(Model.Post.FeatureImagePath))
-        {
-            <div class="mb-3">
-                <label>Current Image:</label><br />
-                <img src="@Model.Post.FeatureImagePath" alt="Current Image" style="max-width: 200px; border-radius: 8px;" />
+            <!-- Category Section -->
+            <div class="form-section">
+                <label asp-for="Post.CategoryId" class="form-label">
+                    <i class="bi bi-folder me-1"></i>Category
+                </label>
+                <select asp-for="Post.CategoryId" asp-items="Model.Categories" class="form-select">
+                    <option value="">Select a category</option>
+                </select>
+                <span asp-validation-for="Post.CategoryId" class="text-danger small"></span>
             </div>
-        }
 
-        <div class="form-group">
-            <label asp-for="FeatureImage"> Image</label>
-            <input asp-for="FeatureImage" class="form-control" />
-        </div>
-        <br />
-        <button class="btn btn-primary mt-1" type="submit">Create</button>
-        <a class="btn btn-dark mt-1">Back To List</a>
-    </form>
+            <!-- Content Section -->
+            <div class="form-section">
+                <label asp-for="Post.Content" class="form-label">
+                    <i class="bi bi-file-text me-1"></i>Content
+                </label>
+                <textarea asp-for="Post.Content" class="form-control"
+                          placeholder="Write your amazing content here..."></textarea>
+                <span asp-validation-for="Post.Content" class="text-danger small"></span>
+            </div>
+
+            <!-- Image Upload Section -->
+            <div class="form-section">
+                <label class="form-label">
+                    <i class="bi bi-image me-1"></i>Featured Image
+                </label>
+                
+                @if (Model.Post != null && !string.IsNullOrEmpty(Model.Post.FeatureImagePath))
+                {
+                    <div class="current-image mb-3">
+                        <p class="text-muted small mb-2">Current Image:</p>
+                        <img src="@Model.Post.FeatureImagePath" alt="Current Image" class="preview-image" />
+                    </div>
+                }
+                
+                <div class="upload-area" id="uploadArea">
+                    <input asp-for="FeatureImage" class="file-input" id="featureImageInput" accept="image/*" />
+                    <div class="upload-content">
+                        <div class="upload-icon">
+                            <i class="bi bi-cloud-arrow-up"></i>
+                        </div>
+                        <p class="upload-text">Drag and drop an image or <span class="browse-link">browse</span></p>
+                        <p class="upload-hint">Supports: JPG, PNG, GIF (Max 5MB)</p>
+                    </div>
+                    <div class="upload-preview" id="uploadPreview" style="display: none;">
+                        <img id="previewImg" src="" alt="Preview" />
+                        <button type="button" class="remove-image" onclick="removePreview()">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit Section -->
+            <div class="form-actions">
+                <a asp-action="Index" asp-controller="Post" class="btn btn-outline-secondary btn-lg">
+                    <i class="bi bi-x-lg me-1"></i>Cancel
+                </a>
+                <button class="btn btn-primary btn-lg" type="submit">
+                    <i class="bi bi-send me-1"></i>Publish Post
+                </button>
+            </div>
+        </form>
+    </div>
 </div>
 
 @section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    
     <script src="https://cdn.tiny.cloud/1/d3fp1fofhtturfhsthantmso3q0fru5s2d0n3snh4ftgyupy/tinymce/7/tinymce.min.js"
-        referrerpolicy="origin"></script>
+            referrerpolicy="origin"></script>
     <script>
         tinymce.init({
             selector: 'textarea',
+            skin: 'oxide-dark',
+            content_css: 'dark',
+            height: 400,
             plugins: [
-                'anchor', 'autolink', 'charmap', 'codesample', 'emoticons', 'image', 'link', 'lists', 'media', 'searchreplace', 'table', 'visualblocks', 'wordcount',
-                'checklist', 'mediaembed', 'casechange', 'formatpainter', 'pageembed', 'a11ychecker', 'tinymcespellchecker', 'permanentpen', 'powerpaste', 'advtable', 'advcode', 'editimage', 'advtemplate', 'ai', 'mentions', 'tinycomments', 'tableofcontents', 'footnotes', 'mergetags', 'autocorrect', 'typography', 'inlinecss', 'markdown', 'importword', 'exportword', 'exportpdf'
+                'anchor', 'autolink', 'charmap', 'codesample', 'emoticons', 'image', 'link', 'lists', 'media', 'searchreplace', 'table', 'visualblocks', 'wordcount'
             ],
-            toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table mergetags | addcomment showcomments | spellcheckdialog a11ycheck typography | align lineheight | checklist numlist bullist indent outdent | emoticons charmap | removeformat',
-            tinycomments_mode: 'embedded',
-            tinycomments_author: 'Author name',
-            mergetags_list: [
-                { value: 'First.Name', title: 'First Name' },
-                { value: 'Email', title: 'Email' },
-            ],
-            ai_request: (request, respondWith) => respondWith.string(() => Promise.reject('See docs to implement AI Assistant')),
+            toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table | align lineheight | numlist bullist indent outdent | emoticons charmap | removeformat',
+            menubar: false,
+            statusbar: false,
+            placeholder: 'Start writing your amazing content...',
+            content_style: 'body { font-family: Inter, sans-serif; font-size: 16px; line-height: 1.7; color: #e2e8f0; background: #1a1a2e; padding: 16px; }',
+        });
+
+        // Image preview functionality
+        const fileInput = document.getElementById('featureImageInput');
+        const uploadArea = document.getElementById('uploadArea');
+        const uploadPreview = document.getElementById('uploadPreview');
+        const uploadContent = document.querySelector('.upload-content');
+        const previewImg = document.getElementById('previewImg');
+
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImg.src = e.target.result;
+                    uploadContent.style.display = 'none';
+                    uploadPreview.style.display = 'flex';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function removePreview() {
+            fileInput.value = '';
+            previewImg.src = '';
+            uploadContent.style.display = 'flex';
+            uploadPreview.style.display = 'none';
+        }
+
+        // Drag and drop
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length) {
+                fileInput.files = files;
+                fileInput.dispatchEvent(new Event('change'));
+            }
+        });
+
+        // Show validation summary if has errors
+        document.addEventListener('DOMContentLoaded', function() {
+            var validationSummary = document.querySelector('.validation-summary-errors');
+            if (validationSummary) {
+                validationSummary.style.display = 'block';
+            }
         });
     </script>
 }
+
+<style>
+    .create-post-container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+    
+    .page-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .form-card {
+        background: var(--bg-card);
+        border-radius: var(--radius-xl);
+        padding: 2rem;
+        border: 1px solid var(--border-glass);
+        box-shadow: var(--shadow-lg);
+    }
+    
+    .form-section {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: var(--text-secondary);
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+    }
+    
+    .form-control-lg {
+        font-size: 1.125rem;
+        padding: 0.875rem 1rem;
+    }
+    
+    /* Upload Area */
+    .upload-area {
+        border: 2px dashed var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: 2rem;
+        text-align: center;
+        transition: var(--transition-base);
+        position: relative;
+        cursor: pointer;
+        min-height: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .upload-area:hover,
+    .upload-area.dragover {
+        border-color: var(--primary);
+        background: rgba(124, 58, 237, 0.05);
+    }
+    
+    .file-input {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        cursor: pointer;
+    }
+    
+    .upload-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .upload-icon {
+        width: 64px;
+        height: 64px;
+        background: rgba(124, 58, 237, 0.1);
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1rem;
+    }
+    
+    .upload-icon i {
+        font-size: 1.75rem;
+        color: var(--primary-light);
+    }
+    
+    .upload-text {
+        color: var(--text-secondary);
+        margin-bottom: 0.25rem;
+    }
+    
+    .browse-link {
+        color: var(--primary-light);
+        font-weight: 600;
+    }
+    
+    .upload-hint {
+        font-size: 0.8125rem;
+        color: var(--text-muted);
+        margin: 0;
+    }
+    
+    .upload-preview {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .upload-preview img {
+        max-width: 100%;
+        max-height: 300px;
+        border-radius: var(--radius-lg);
+        object-fit: contain;
+    }
+    
+    .remove-image {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        width: 32px;
+        height: 32px;
+        background: var(--accent-red);
+        border: none;
+        border-radius: var(--radius-full);
+        color: white;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: var(--transition-base);
+    }
+    
+    .remove-image:hover {
+        transform: scale(1.1);
+    }
+    
+    .preview-image {
+        max-width: 200px;
+        border-radius: var(--radius-lg);
+        border: 2px solid var(--border-color);
+    }
+    
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end;
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--border-color);
+    }
+    
+    /* TinyMCE dark mode override */
+    .tox-tinymce {
+        border-radius: var(--radius-lg) !important;
+        border-color: var(--border-color) !important;
+    }
+    
+    .tox .tox-edit-area::before {
+        border-color: var(--primary) !important;
+    }
+</style>

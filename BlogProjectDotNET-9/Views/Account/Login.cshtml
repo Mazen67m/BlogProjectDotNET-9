@@ -4,66 +4,329 @@
     ViewData["Title"] = "Login";
 }
 
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-
-            <div class="card shadow border-0">
-                <div class="card-header bg-primary text-white text-center">
-                    <h3><i class="bi bi-box-arrow-in-right me-2"></i> Login</h3>
+<div class="auth-container">
+    <div class="auth-card">
+        <!-- Left Side - Branding -->
+        <div class="auth-branding">
+            <div class="branding-content">
+                <div class="brand-icon mb-4">
+                    <i class="bi bi-journal-richtext"></i>
                 </div>
-
-                <div class="card-body">
-                    <form asp-action="Login" method="post">
-                        <div asp-validation-summary="All" class="text-danger mb-3"></div>
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="UserName" class="form-label fw-semibold"></label>
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="bi bi-person"></i></span>
-                                    <input asp-for="UserName" class="form-control" placeholder="Enter your username" />
-                                </div>
-                                <span asp-validation-for="UserName" class="text-danger small"></span>
-                            </div>
-
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="Password" class="form-label fw-semibold"></label>
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="bi bi-lock"></i></span>
-                                    <input asp-for="Password" type="password" class="form-control" placeholder="Enter your password" />
-                                </div>
-                                <span asp-validation-for="Password" class="text-danger small"></span>
-                            </div>
-
-                            <div class="col-md-12 mb-3">
-                                <div class="form-check">
-                                    <input asp-for="RememberMe" class="form-check-input" />
-                                    <label asp-for="RememberMe" class="form-check-label">
-                                        @Html.DisplayNameFor(model => model.RememberMe)
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="d-grid mt-2">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-door-open"></i> Login
-                            </button>
-                        </div>
-                    </form>
-                </div>
-
-                <div class="card-footer text-center">
-                    <span>Don't have an account?</span>
-                    <a asp-action="Register" class="text-decoration-none ms-1">Register here</a>
+                <h2>Welcome Back!</h2>
+                <p class="mb-4">Sign in to continue your journey. Write, share, and connect with our community of passionate bloggers.</p>
+                
+                <div class="features">
+                    <div class="feature-item">
+                        <i class="bi bi-check-circle-fill"></i>
+                        <span>Share your stories</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="bi bi-check-circle-fill"></i>
+                        <span>Connect with readers</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="bi bi-check-circle-fill"></i>
+                        <span>Build your audience</span>
+                    </div>
                 </div>
             </div>
+            <div class="branding-pattern"></div>
+        </div>
+        
+        <!-- Right Side - Form -->
+        <div class="auth-form-side">
+            <div class="auth-form-container">
+                <div class="form-header">
+                    <h3>Sign In</h3>
+                    <p class="text-muted">Enter your credentials to access your account</p>
+                </div>
+                
+                <form asp-action="Login" method="post" class="auth-form">
+                    <div asp-validation-summary="All" class="alert alert-danger mb-3" style="display: none;"></div>
+                    
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            var validationSummary = document.querySelector('[data-valmsg-summary="true"]');
+                            if (validationSummary && validationSummary.querySelector('li')) {
+                                validationSummary.style.display = 'block';
+                            }
+                        });
+                    </script>
 
+                    <div class="form-group mb-4">
+                        <label asp-for="UserName" class="form-label">Username</label>
+                        <div class="input-wrapper">
+                            <i class="bi bi-person input-icon"></i>
+                            <input asp-for="UserName" class="form-control" placeholder="Enter your username" />
+                        </div>
+                        <span asp-validation-for="UserName" class="text-danger small"></span>
+                    </div>
+
+                    <div class="form-group mb-4">
+                        <label asp-for="Password" class="form-label">Password</label>
+                        <div class="input-wrapper">
+                            <i class="bi bi-lock input-icon"></i>
+                            <input asp-for="Password" type="password" class="form-control" placeholder="Enter your password" />
+                            <button type="button" class="toggle-password" onclick="togglePassword(this)">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
+                        <span asp-validation-for="Password" class="text-danger small"></span>
+                    </div>
+
+                    <div class="form-group mb-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="form-check">
+                                <input asp-for="RememberMe" class="form-check-input" />
+                                <label asp-for="RememberMe" class="form-check-label">
+                                    Remember me
+                                </label>
+                            </div>
+                            <a href="#" class="forgot-link">Forgot password?</a>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 btn-lg">
+                        <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+                    </button>
+                </form>
+                
+                <div class="auth-footer">
+                    <p class="mb-0">
+                        Don't have an account? 
+                        <a asp-action="Register" class="register-link">Create one</a>
+                    </p>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        function togglePassword(button) {
+            const input = button.parentElement.querySelector('input');
+            const icon = button.querySelector('i');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('bi-eye');
+                icon.classList.add('bi-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('bi-eye-slash');
+                icon.classList.add('bi-eye');
+            }
+        }
+        
+        // Show validation summary if has errors
+        document.addEventListener('DOMContentLoaded', function() {
+            var validationSummary = document.querySelector('.validation-summary-errors');
+            if (validationSummary) {
+                validationSummary.classList.add('show');
+                validationSummary.style.display = 'block';
+            }
+        });
+    </script>
 }
+
+<style>
+    .auth-container {
+        min-height: calc(100vh - 200px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 0;
+    }
+    
+    .auth-card {
+        display: flex;
+        background: var(--bg-card);
+        border-radius: var(--radius-xl);
+        overflow: hidden;
+        box-shadow: var(--shadow-lg), 0 0 60px rgba(124, 58, 237, 0.15);
+        border: 1px solid var(--border-glass);
+        max-width: 1000px;
+        width: 100%;
+    }
+    
+    .auth-branding {
+        flex: 1;
+        background: var(--gradient-primary);
+        padding: 3rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .branding-content {
+        position: relative;
+        z-index: 1;
+    }
+    
+    .branding-pattern {
+        position: absolute;
+        inset: 0;
+        background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    
+    .auth-branding .brand-icon {
+        width: 70px;
+        height: 70px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: var(--radius-lg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        color: white;
+        backdrop-filter: blur(10px);
+    }
+    
+    .auth-branding h2 {
+        color: white;
+        font-size: 2rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .auth-branding p {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 1rem;
+        line-height: 1.7;
+    }
+    
+    .features {
+        margin-top: 2rem;
+    }
+    
+    .feature-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        color: rgba(255, 255, 255, 0.9);
+        margin-bottom: 0.75rem;
+        font-size: 0.9375rem;
+    }
+    
+    .feature-item i {
+        color: #22d3ee;
+    }
+    
+    .auth-form-side {
+        flex: 1;
+        padding: 3rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .auth-form-container {
+        width: 100%;
+        max-width: 380px;
+    }
+    
+    .form-header {
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+    
+    .form-header h3 {
+        font-size: 1.75rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-header p {
+        color: var(--text-muted);
+        font-size: 0.9375rem;
+    }
+    
+    .input-wrapper {
+        position: relative;
+    }
+    
+    .input-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-muted);
+        font-size: 1.125rem;
+    }
+    
+    .input-wrapper .form-control {
+        padding-left: 2.75rem;
+        padding-right: 3rem;
+    }
+    
+    .toggle-password {
+        position: absolute;
+        right: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: var(--text-muted);
+        cursor: pointer;
+        padding: 0.25rem;
+        transition: var(--transition-base);
+    }
+    
+    .toggle-password:hover {
+        color: var(--primary-light);
+    }
+    
+    .forgot-link {
+        color: var(--primary-light);
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+    
+    .forgot-link:hover {
+        color: var(--secondary-light);
+    }
+    
+    .auth-footer {
+        margin-top: 2rem;
+        text-align: center;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--border-color);
+    }
+    
+    .auth-footer p {
+        color: var(--text-muted);
+    }
+    
+    .register-link {
+        color: var(--primary-light);
+        font-weight: 600;
+    }
+    
+    .register-link:hover {
+        color: var(--secondary-light);
+    }
+    
+    @@media (max-width: 768px) {
+        .auth-card {
+            flex-direction: column;
+        }
+        
+        .auth-branding {
+            padding: 2rem;
+        }
+        
+        .auth-branding h2 {
+            font-size: 1.5rem;
+        }
+        
+        .features {
+            display: none;
+        }
+        
+        .auth-form-side {
+            padding: 2rem;
+        }
+    }
+</style>

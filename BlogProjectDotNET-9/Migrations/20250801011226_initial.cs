@@ -5,7 +5,7 @@
 namespace BlogProjectDotNET_9.Migrations
 {
     /// <inheritdoc />
-    public partial class InitAddingIdentityWithUser2 : Migration
+    public partial class initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

@@ -17,7 +17,7 @@ namespace BlogProjectDotNET_9.Controllers
         public AccountController(UserManager<ApplicationUser> userManager,
                                  SignInManager<ApplicationUser> signInManager,
                                  RoleManager<IdentityRole> roleManager,
-                                 IWebHostEnvironment webHostEnvironment) 
+                                 IWebHostEnvironment webHostEnvironment)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -63,6 +63,7 @@ namespace BlogProjectDotNET_9.Controllers
         public IActionResult Login() => View();
 
         [HttpPost]
+
         public async Task<IActionResult> Login(LoginViewModel model)
         {
             if (!ModelState.IsValid)
@@ -81,7 +82,7 @@ namespace BlogProjectDotNET_9.Controllers
                 return View(model);
             }
             await _signInManager.SignInAsync(user, model.RememberMe);
-            return RedirectToAction("Index", "Post");                    
+            return RedirectToAction("Index", "Post");
         }
 
         public async Task<IActionResult> Logout()
@@ -144,7 +145,7 @@ namespace BlogProjectDotNET_9.Controllers
             {
                 fullName = user.FullName,
                 Email = user.Email,
-                ExistingImagePath = user.ProfilePictureUrl ,
+                ExistingImagePath = user.ProfilePictureUrl,
             };
             return View(model);
         }
@@ -152,7 +153,7 @@ namespace BlogProjectDotNET_9.Controllers
         [HttpPost]
         public async Task<IActionResult> EditProfile(EditProfileViewModel model)
         {
-            if(!ModelState.IsValid)
+            if (!ModelState.IsValid)
                 return View(model);
 
             var user = await _userManager.GetUserAsync(User);

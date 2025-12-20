@@ -1,13 +1,12 @@
 ﻿@model HomeViewModel
 @using BlogProjectDotNET_9.Helper
-
 @{
     ViewData["Title"] = "Home Page";
 }
 
 @if (Model.SliderPosts.Any(p => p.Author.IsApproved))
 {
-    <div id="postCarousel" class="carousel slide mb-5" data-bs-ride="carousel" data-bs-interval="1000">
+    <div id="postCarousel" class="carousel slide mb-5" data-bs-ride="carousel" data-bs-interval="2000">
         <div class="carousel-inner rounded shadow-lg">
 
             @for (int i = 0; i < Model.SliderPosts.Count; i++)
@@ -28,7 +27,6 @@
             }
         </div>
 
-        <!-- Controls -->
         <button class="carousel-control-prev" type="button" data-bs-target="#postCarousel" data-bs-slide="prev">
             <span class="carousel-control-prev-icon" aria-hidden="true"></span>
             <span class="visually-hidden">Previous</span>
@@ -42,7 +40,6 @@
 
 <div class="container mt-5">
 
-    <!-- ✅ Slider Section -->
     <h2 class="mb-4">Top Posts</h2>
     <div class="row">
         @foreach (var post in Model.SliderPosts.Where(p => p.Author.IsApproved))
@@ -65,9 +62,7 @@
         }
     </div>
 
-    <!-- ✅ Latest Posts -->
     <hr class="my-5" />
-    <h2 class="mb-4">Latest Posts</h2>
     <div class="row">
         @foreach (var post in Model.RecentPosts.Where(p => p.Author.IsApproved))
         {
@@ -89,7 +84,6 @@
         }
     </div>
 
-    <!-- ✅ Categories Section -->
     <hr class="my-5" />
     <h2 class="mb-4">Categories</h2>
     <div class="row">

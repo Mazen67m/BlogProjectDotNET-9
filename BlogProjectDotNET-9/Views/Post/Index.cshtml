@@ -5,48 +5,88 @@
 @model IEnumerable<Post>;
 @{
     ViewData["Title"] = "Blog Posts";
+    var currentCategory = HttpContextAccessor.HttpContext?.Request?.Query["categoryID"].ToString();
+    var currentSearch = HttpContextAccessor.HttpContext?.Request?.Query["search"].ToString();
 }
-<style>
-    .card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-        transition: all 0.3s ease-in-out;
-    }
-</style>
 
-<form method="get" asp-action="Index" class="row justify-content-center mb-4 gx-2">
-    <div class="col-md-4">
-        <select class="form-select" name="categoryID" onchange="this.form.submit()">
-            <option value="">-- All Categories --</option>
-            @foreach (var category in ViewBag.Categories)
+<!-- Hero Section -->
+<div class="hero-section mb-5">
+    <div class="hero-content position-relative" style="z-index: 1;">
+        <h1 class="display-4 fw-bold text-white mb-3">
+            Discover Amazing Stories
+        </h1>
+        <p class="lead text-white-50 mb-4">
+            Explore insightful articles, tutorials, and thoughts from our community of writers.
+        </p>
+        
+        <!-- Search & Filter Form -->
+        <form method="get" asp-action="Index" class="row justify-content-center g-3 mt-4" id="filterForm">
+            <div class="col-md-4">
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="bi bi-folder"></i>
+                    </span>
+                    <select class="form-select" name="categoryID" id="categorySelect">
+                        <option value="">All Categories</option>
+                        @foreach (var category in ViewBag.Categories)
+                        {
+                            <option value="@category.Id"
+                                selected="@(currentCategory == category.Id.ToString())">
+                                @category.Name
+                            </option>
+                        }
+                    </select>
+                </div>
+            </div>
+
+            <div class="col-md-5">
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="bi bi-search"></i>
+                    </span>
+                    <input type="search" name="search" class="form-control" 
+                           placeholder="Search posts by title or content..."
+                           value="@currentSearch" id="searchInput" />
+                </div>
+            </div>
+
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-funnel me-1"></i> Filter
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Stats Bar -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div class="d-flex align-items-center gap-3">
+                <span class="badge bg-primary fs-6 px-3 py-2">
+                    <i class="bi bi-file-earmark-text me-1"></i>
+                    @Model.Count() Posts
+                </span>
+                @if (!string.IsNullOrEmpty(currentCategory) || !string.IsNullOrEmpty(currentSearch))
+                {
+                    <a href="@Url.Action("Index", "Post")" class="btn btn-outline-danger btn-sm">
+                        <i class="bi bi-x-lg me-1"></i>Clear Filters
+                    </a>
+                }
+            </div>
+            
+            @if (User.IsInRole("Author") || User.IsInRole("Admin"))
             {
-                <option value="@category.Id"
-                    selected="@(HttpContextAccessor.HttpContext?.Request?.Query["categoryID"] == category.Id.ToString())">
-                    @category.Name
-                </option>
+                <a class="btn btn-primary" asp-action="Create" asp-controller="Post">
+                    <i class="bi bi-plus-lg me-1"></i> Create New Post
+                </a>
             }
-        </select>
+        </div>
     </div>
+</div>
 
-    <div class="col-md-4">
-        <input type="search" name="search" class="form-control" placeholder="Search posts..."
-            value="@HttpContextAccessor.HttpContext?.Request?.Query["search"]" />
-    </div>
-
-    <div class="col-md-2">
-        <button type="submit" class="btn btn-primary w-100">
-            <i class="bi bi-search"></i> Filter
-        </button>
-    </div>
-</form>
-
-@if (User.IsInRole("Author"))
-{
-    <div class="text-end my-3">
-        <a class="btn btn-primary" asp-action="Create" asp-controller="Post"> Create New Post</a>
-    </div>
-}
-
+<!-- Posts Grid -->
 <div id="postsContainer">
     <partial name="_PostListPartial" model="Model" />
 </div>
@@ -54,32 +94,100 @@
 @section Scripts {
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-
         $(document).ready(function(){
-        const form = $('form[method="get"]');
+            const form = $('#filterForm');
+            let debounceTimer;
 
-        form.on('submit', function(e){
-        e.preventDefault();
+            form.on('submit', function(e){
+                e.preventDefault();
+                loadPosts();
+            });
 
-        const formData = form.serialize();
-        $.ajax({
-        url: '@Url.Action("Index", "Post")',
-        type: 'GET',
-        data: formData,
-        success: function(data) {
-        $('#postsContainer').html(data);
-        },
-        });
+            $('#searchInput').on('input', function() {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(function() {
+                    loadPosts();
+                }, 300);
+            });
 
-        });
-        $('input[name = "search"]').on('input', function() {
-        form.submit();
-        });
+            $('#categorySelect').on('change', function() {
+                loadPosts();
+            });
 
-        $('select[name="categoryID"]').on('change', function() {
-        form.submit();
-        });
-
+            function loadPosts() {
+                const formData = form.serialize();
+                $.ajax({
+                    url: '@Url.Action("Index", "Post")',
+                    type: 'GET',
+                    data: formData,
+                    success: function(data) {
+                        $('#postsContainer').html(data);
+                    },
+                });
+            }
         });
     </script>
 }
+
+<style>
+    .hero-section {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+        border-radius: var(--radius-xl);
+        padding: 4rem 2rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        box-shadow: var(--shadow-lg), 0 0 60px rgba(124, 58, 237, 0.3);
+    }
+    
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.08'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        opacity: 0.5;
+    }
+    
+    .hero-section .form-control,
+    .hero-section .form-select {
+        background: rgba(255, 255, 255, 0.15) !important;
+        border: 1px solid rgba(255, 255, 255, 0.3) !important;
+        color: white !important;
+        backdrop-filter: blur(10px);
+    }
+    
+    .hero-section .form-control::placeholder {
+        color: rgba(255, 255, 255, 0.7) !important;
+    }
+    
+    .hero-section .form-control:focus,
+    .hero-section .form-select:focus {
+        background: rgba(255, 255, 255, 0.25) !important;
+        border-color: rgba(255, 255, 255, 0.5) !important;
+        box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2) !important;
+    }
+    
+    .hero-section .input-group-text {
+        background: rgba(255, 255, 255, 0.15) !important;
+        border: 1px solid rgba(255, 255, 255, 0.3) !important;
+        color: white !important;
+    }
+    
+    .hero-section .btn-primary {
+        background: rgba(255, 255, 255, 0.2) !important;
+        border: 1px solid rgba(255, 255, 255, 0.4) !important;
+        backdrop-filter: blur(10px);
+    }
+    
+    .hero-section .btn-primary:hover {
+        background: rgba(255, 255, 255, 0.3) !important;
+    }
+    
+    .hero-section option {
+        background: var(--bg-secondary);
+        color: var(--text-primary);
+    }
+</style>
