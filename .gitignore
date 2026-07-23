@@ -361,3 +361,25 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Project-specific
+## ASP.NET Core environment-specific settings (may contain sensitive data)
+appsettings.Development.json
+appsettings.*.json
+!appsettings.json
+!appsettings.example.json
+
+## User-uploaded images (runtime content, not source code)
+**/wwwroot/images/
+
+## VS Code editor settings
+.vscode/
+
+## Stray files at repo root
+HomeViewModel.cs
+
+## Rider IDE
+.idea/
+
+## dotnet user secrets
+secrets.json

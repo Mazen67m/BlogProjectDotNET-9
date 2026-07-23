@@ -239,8 +239,9 @@ dotnet run
 ```
 
 ### Default Admin Account
-- **Email**: mazenmohsen11111@gmail.com
-- **Password**: Mazen123@
+
+An admin account is automatically seeded on first run via `Program.cs`.
+To configure the seed credentials, copy `appsettings.example.json` → `appsettings.Development.json` and set your preferred admin email and password in the seed configuration section of `Program.cs`.
 
 ---
 
